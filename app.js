@@ -168,7 +168,8 @@ function showGridLoading(isLoading) {
 function renderSummary() {
   const totalSpaces = state.spaces.length;
   const totalCapacity = state.spaces.reduce((sum, s) => sum + parseInt(s.capacity || 0), 0);
-  const totalRegistered = state.registrations.reduce((sum, r) => sum + parseInt(r.party_size || 1), 0);
+  const totalRegistered = state.spaces.reduce((sum, s) => sum + parseInt(s.host_party_size || 1), 0) +
+                          state.registrations.reduce((sum, r) => sum + parseInt(r.party_size || 1), 0);
 
   document.getElementById('statTotalSpaces').textContent = `${totalSpaces}개`;
   document.getElementById('statTotalCapacity').textContent = `${totalCapacity}명`;
@@ -208,7 +209,7 @@ function renderSpaces() {
 
   filteredSpaces.forEach(space => {
     const spaceRegs = state.registrations.filter(r => r.space_id === space.id);
-    const currentCount = spaceRegs.reduce((sum, r) => sum + parseInt(r.party_size || 1), 0);
+    const currentCount = parseInt(space.host_party_size || 1) + spaceRegs.reduce((sum, r) => sum + parseInt(r.party_size || 1), 0);
     const maxCapacity = parseInt(space.capacity);
     const occupancyRate = (currentCount / maxCapacity) * 100;
     const isFull = currentCount >= maxCapacity;
@@ -236,7 +237,7 @@ function renderSpaces() {
       </div>
       <div class="host">
         <i data-lucide="user" style="width: 14px; height: 14px;"></i>
-        <span>호스트: <strong>${escapeHtml(space.host_name)}</strong></span>
+        <span>호스트: <strong>${escapeHtml(space.host_name)}</strong> (${space.host_party_size || 1}명)</span>
       </div>
       <div class="space-card-body">
         <div class="space-info-row">
@@ -288,7 +289,7 @@ function openSpaceDetailsModal(space) {
   state.selectedSpace = space;
   const modal = document.getElementById('detailsModal');
   const spaceRegs = state.registrations.filter(r => r.space_id === space.id);
-  const currentCount = spaceRegs.reduce((sum, r) => sum + parseInt(r.party_size || 1), 0);
+  const currentCount = parseInt(space.host_party_size || 1) + spaceRegs.reduce((sum, r) => sum + parseInt(r.party_size || 1), 0);
   const maxCapacity = parseInt(space.capacity);
   const isFull = currentCount >= maxCapacity;
 
@@ -336,9 +337,19 @@ function openSpaceDetailsModal(space) {
   const listContainer = document.getElementById('modalParticipantsList');
   listContainer.innerHTML = '';
   
-  if (spaceRegs.length === 0) {
-    listContainer.innerHTML = '<li class="no-participants">첫 번째 신청자가 되어보세요!</li>';
-  } else {
+  // Prepend host representation chip
+  const hostLi = document.createElement('li');
+  hostLi.className = 'participant-chip host-chip';
+  hostLi.style.backgroundColor = 'rgba(61, 96, 81, 0.06)';
+  hostLi.style.borderColor = 'rgba(61, 96, 81, 0.15)';
+  hostLi.style.fontWeight = '700';
+  hostLi.innerHTML = `
+    <i data-lucide="home" style="color: var(--primary); width: 12px; height: 12px; vertical-align: middle;"></i>
+    <span style="color: var(--primary); font-weight: 700;">${escapeHtml(space.host_name)} (${space.host_party_size || 1}명)</span>
+  `;
+  listContainer.appendChild(hostLi);
+
+  if (spaceRegs.length > 0) {
     spaceRegs.forEach(reg => {
       const li = document.createElement('li');
       li.className = 'participant-chip';
@@ -351,8 +362,8 @@ function openSpaceDetailsModal(space) {
       `;
       listContainer.appendChild(li);
     });
-    lucide.createIcons();
   }
+  lucide.createIcons();
 
   // Setup form states
   document.getElementById('joinSpaceId').value = space.id;
@@ -460,6 +471,7 @@ function openSpaceDetailsModal(space) {
         // Load details into Host Form
         document.getElementById('hostName').value = space.host_name;
         document.getElementById('hostPhone').value = space.host_phone;
+        document.getElementById('hostPartySize').value = space.host_party_size || 1;
         document.getElementById('spaceName').value = space.space_name;
         document.getElementById('maxCapacity').value = space.capacity;
         document.getElementById('spaceFee').value = space.fee;
@@ -505,6 +517,7 @@ async function handleHostFormSubmit(e) {
   
   const host_name = document.getElementById('hostName').value.trim();
   const host_phone = document.getElementById('hostPhone').value.trim();
+  const host_party_size = parseInt(document.getElementById('hostPartySize').value || 1);
   const space_name = document.getElementById('spaceName').value.trim();
   const capacity = parseInt(document.getElementById('maxCapacity').value);
   const fee = document.getElementById('spaceFee').value.trim();
@@ -524,7 +537,7 @@ async function handleHostFormSubmit(e) {
   btn.innerHTML = `<div class="spinner" style="width: 16px; height: 16px; margin: 0; border-width: 2px;"></div> &nbsp; ${isEditing ? '수정' : '등록'} 중...`;
 
   try {
-    const spaceData = { host_name, host_phone, space_name, capacity, fee, parking_info, location, description };
+    const spaceData = { host_name, host_phone, host_party_size, space_name, capacity, fee, parking_info, location, description };
     
     if (isEditing) {
       // Update Space
