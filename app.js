@@ -1,8 +1,7 @@
 // State management
 let state = {
-  syncMode: 'live', // Default to live sync if keys are set
-  supabaseUrl: 'https://etdorhclbxibheuoclqp.supabase.co', // User's Supabase URL
-  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0ZG9yaGNsYnhpYmhldW9jbHFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNjA1NTIsImV4cCI6MjA5ODgzNjU1Mn0.osisfPNmKUzUSUx1lfBlJGMoAIEGS7XQ0z-yI1-v03M', // User's Supabase Anon Key
+  supabaseUrl: 'https://etdorhclbxibheuoclqp.supabase.co', // Your Supabase URL
+  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0ZG9yaGNsYnhpYmhldW9jbHFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNjA1NTIsImV4cCI6MjA5ODgzNjU1Mn0.osisfPNmKUzUSUx1lfBlJGMoAIEGS7XQ0z-yI1-v03M', // Your Supabase Anon Key
   supabaseClient: null,
   spaces: [],
   registrations: [],
@@ -11,110 +10,6 @@ let state = {
   searchQuery: '',
   myRegistrationIds: JSON.parse(localStorage.getItem('our_space_my_regs') || '[]')
 };
-
-// Mock Initial Data (for demo mode)
-const MOCK_SPACES = [
-  {
-    id: 'mock-space-1',
-    host_name: '김민수 집사',
-    space_name: '민수의 아늑한 서재',
-    location: '서울 마포구 공덕동 10-5 (공덕역 4번 출구 앞)',
-    capacity: 8,
-    fee: '없음',
-    parking_info: 'yes',
-    description: '따뜻한 핸드드립 커피와 보이차가 준비되어 있습니다. 책으로 가득 찬 아늑한 서재 공간에서 편안하게 함께 예배드리고 교제 나누길 소망합니다. 주차는 오피스텔 지하 주차장에 1대 무료 지원 가능합니다. 아이 동반 가능합니다.',
-    created_at: new Date(Date.now() - 3600000 * 5).toISOString()
-  },
-  {
-    id: 'mock-space-2',
-    host_name: '박영희 권사',
-    space_name: '푸른 나무 스터디룸 (공간 대여)',
-    location: '서울 서대문구 신촌로 123 (2층)',
-    capacity: 12,
-    fee: '5,000원 (공간 대여료 분담)',
-    parking_info: 'none',
-    description: '지하철역과 가까운 대형 세미나실 카페를 2시간 동안 예약했습니다. 쾌적한 환경과 음향 시설이 갖추어져 있어 편하게 찬양하고 나눌 수 있습니다. 오실 때 따뜻한 마음만 가지고 편하게 오세요!',
-    created_at: new Date(Date.now() - 3600000 * 24).toISOString()
-  },
-  {
-    id: 'mock-space-3',
-    host_name: '최성호 장로',
-    space_name: '성호네 패밀리 룸',
-    location: '서울 용산구 한강대로 45 (신용산파크 102동)',
-    capacity: 15,
-    fee: '없음 (점심 제공)',
-    parking_info: 'yes',
-    description: '거실이 넓어 많은 인원이 모여도 쾌적합니다. 예배 후 함께 김밥과 라면으로 가벼운 점심 식사 교제를 나눌 예정입니다. 식사 준비를 위해 미리 신청해 주시면 감사하겠습니다.',
-    created_at: new Date(Date.now() - 3600000 * 48).toISOString()
-  }
-];
-
-const MOCK_REGISTRATIONS = [
-  { id: 'mock-reg-1', space_id: 'mock-space-1', user_name: '이영희', user_phone: '1234', party_size: 2, parking_required: true },
-  { id: 'mock-reg-2', space_id: 'mock-space-1', user_name: '정지훈', user_phone: '5678', party_size: 1, parking_required: false },
-  { id: 'mock-reg-3', space_id: 'mock-space-2', user_name: '최재은', user_phone: '9012', party_size: 3, parking_required: false },
-  { id: 'mock-reg-4', space_id: 'mock-space-2', user_name: '김태우', user_phone: '3456', party_size: 1, parking_required: false },
-  { id: 'mock-reg-5', space_id: 'mock-space-2', user_name: '박민지', user_phone: '7890', party_size: 2, parking_required: true },
-  { id: 'mock-reg-6', space_id: 'mock-space-3', user_name: '윤석진', user_phone: '2468', party_size: 4, parking_required: true }
-];
-
-// Load Settings from LocalStorage or Hardcoded Config
-function loadSettings() {
-  const savedMode = localStorage.getItem('our_space_sync_mode');
-  const savedUrl = localStorage.getItem('our_space_sb_url');
-  const savedKey = localStorage.getItem('our_space_sb_key');
-
-  // Priority 1: User's custom settings saved in LocalStorage
-  if (savedUrl && savedKey) {
-    state.supabaseUrl = savedUrl;
-    state.supabaseKey = savedKey;
-    state.syncMode = savedMode || 'live';
-  }
-
-  // Priority 2: Check if developer has replaced the hardcoded placeholders
-  const isHardcodedConfigured = 
-    state.supabaseUrl && 
-    state.supabaseUrl !== 'YOUR_SUPABASE_URL' && 
-    state.supabaseKey && 
-    state.supabaseKey !== 'YOUR_SUPABASE_KEY';
-
-  if (isHardcodedConfigured && state.syncMode !== 'demo') {
-    state.syncMode = 'live';
-    
-    // Set up UI
-    document.getElementById('modeLive').classList.add('active');
-    document.getElementById('modeDemo').classList.remove('active');
-    document.getElementById('supabaseConfigArea').classList.remove('hidden');
-    document.getElementById('sbUrl').value = state.supabaseUrl;
-    document.getElementById('sbKey').value = state.supabaseKey;
-    
-    initSupabase();
-  } else if (state.syncMode === 'live' && savedUrl && savedKey) {
-    // Fallback if settings have saved URL/Key
-    document.getElementById('modeLive').classList.add('active');
-    document.getElementById('modeDemo').classList.remove('active');
-    document.getElementById('supabaseConfigArea').classList.remove('hidden');
-    document.getElementById('sbUrl').value = state.supabaseUrl;
-    document.getElementById('sbKey').value = state.supabaseKey;
-    
-    initSupabase();
-  } else {
-    // If not configured, fall back to Demo Mode with LocalStorage
-    state.syncMode = 'demo';
-    document.getElementById('modeDemo').classList.add('active');
-    document.getElementById('modeLive').classList.remove('active');
-    document.getElementById('supabaseConfigArea').classList.add('hidden');
-    
-    // Initialize LocalStorage with Mock Data if empty
-    if (!localStorage.getItem('our_space_spaces')) {
-      localStorage.setItem('our_space_spaces', JSON.stringify(MOCK_SPACES));
-    }
-    if (!localStorage.getItem('our_space_regs')) {
-      localStorage.setItem('our_space_regs', JSON.stringify(MOCK_REGISTRATIONS));
-    }
-    updateConnectionStatusUI(false);
-  }
-}
 
 // Initialize Supabase Client
 function initSupabase() {
@@ -127,82 +22,12 @@ function initSupabase() {
         cleanUrl = cleanUrl.slice(0, -8);
       }
       state.supabaseClient = supabase.createClient(cleanUrl, state.supabaseKey);
-      updateConnectionStatusUI(true);
     } catch (err) {
-      showToast('Supabase 연결 설정에 실패했습니다. 설정을 확인해 주세요.', 'error');
-      updateConnectionStatusUI(false, 'error');
+      console.error('Supabase initialization failed:', err);
+      showToast('데이터베이스 초기화에 실패했습니다. 관리자에게 문의하세요.', 'error');
     }
-  } else {
-    updateConnectionStatusUI(false);
   }
 }
-
-// Update connection badge UI
-function updateConnectionStatusUI(isLive, statusType = 'ok') {
-  const el = document.getElementById('connectionStatus');
-  const dot = el.querySelector('.status-dot');
-  const txt = el.querySelector('.status-text');
-
-  el.className = 'status-indicator';
-
-  if (isLive) {
-    if (statusType === 'ok') {
-      el.classList.add('live-mode');
-      txt.textContent = '실시간 동기화 중 (Supabase)';
-    } else {
-      el.classList.add('demo-mode');
-      txt.textContent = '데이터베이스 연결 실패';
-    }
-  } else {
-    el.classList.add('demo-mode');
-    txt.textContent = '데모 모드 (기기 내 저장)';
-  }
-}
-
-// Local Database Adapter
-const localDb = {
-  getSpaces: () => {
-    return JSON.parse(localStorage.getItem('our_space_spaces') || '[]');
-  },
-  saveSpaces: (spaces) => {
-    localStorage.setItem('our_space_spaces', JSON.stringify(spaces));
-  },
-  getRegistrations: () => {
-    return JSON.parse(localStorage.getItem('our_space_regs') || '[]');
-  },
-  saveRegistrations: (regs) => {
-    localStorage.setItem('our_space_regs', JSON.stringify(regs));
-  },
-  createSpace: (space) => {
-    const spaces = localDb.getSpaces();
-    const newSpace = {
-      id: 'space-' + Math.random().toString(36).substr(2, 9),
-      created_at: new Date().toISOString(),
-      ...space
-    };
-    spaces.unshift(newSpace);
-    localDb.saveSpaces(spaces);
-    return newSpace;
-  },
-  createRegistration: (reg) => {
-    const regs = localDb.getRegistrations();
-    const newReg = {
-      id: 'reg-' + Math.random().toString(36).substr(2, 9),
-      created_at: new Date().toISOString(),
-      ...reg
-    };
-    regs.push(newReg);
-    localDb.saveRegistrations(regs);
-    return newReg;
-  },
-  deleteRegistration: (id) => {
-    let regs = localDb.getRegistrations();
-    const initialLength = regs.length;
-    regs = regs.filter(r => r.id !== id);
-    localDb.saveRegistrations(regs);
-    return regs.length < initialLength;
-  }
-};
 
 // Supabase Database Adapter
 const supabaseDb = {
@@ -243,7 +68,6 @@ const supabaseDb = {
   },
   deleteRegistration: async (id, phoneCode) => {
     if (!state.supabaseClient) throw new Error('Supabase client not initialized');
-    // Security: Only delete if user name/phone code matches in real database
     const { error } = await state.supabaseClient
       .from('registrations')
       .delete()
@@ -254,16 +78,13 @@ const supabaseDb = {
   }
 };
 
-// Fetch data depending on active mode
+// Fetch data from Supabase
 async function loadData() {
   showGridLoading(true);
   try {
-    if (state.syncMode === 'live' && state.supabaseClient) {
+    if (state.supabaseClient) {
       state.spaces = await supabaseDb.getSpaces();
       state.registrations = await supabaseDb.getRegistrations();
-    } else {
-      state.spaces = localDb.getSpaces();
-      state.registrations = localDb.getRegistrations();
     }
     renderSummary();
     renderSpaces();
@@ -278,12 +99,7 @@ async function loadData() {
     }
   } catch (err) {
     console.error('Error fetching data:', err);
-    showToast('데이터를 불러오는 중 오류가 발생했습니다. 데모 모드로 자동 전환합니다.', 'error');
-    // Fallback to demo mode silently to ensure app is usable
-    state.spaces = localDb.getSpaces();
-    state.registrations = localDb.getRegistrations();
-    renderSummary();
-    renderSpaces();
+    showToast('실시간 데이터를 불러오는 중 오류가 발생했습니다.', 'error');
   } finally {
     showGridLoading(false);
   }
@@ -296,7 +112,7 @@ function showGridLoading(isLoading) {
     grid.innerHTML = `
       <div class="loading-state">
         <div class="spinner"></div>
-        <p>데이터 동기화 중...</p>
+        <p>실시간 데이터 동기화 중...</p>
       </div>
     `;
   }
@@ -430,7 +246,7 @@ function openSpaceDetailsModal(space) {
   const maxCapacity = parseInt(space.capacity);
   const isFull = currentCount >= maxCapacity;
 
-  // Build Maps search link (Naver or Kakao map search)
+  // Build Maps search link
   const mapSearchUrl = `https://m.map.naver.com/search2/search.naver?query=${encodeURIComponent(space.location)}`;
   const mapLink = document.getElementById('modalMapLink');
   mapLink.href = mapSearchUrl;
@@ -555,7 +371,7 @@ function closeModal() {
   state.selectedSpace = null;
 }
 
-// Open Space Submit
+// Host Space Submit
 async function handleHostFormSubmit(e) {
   e.preventDefault();
   
@@ -573,13 +389,7 @@ async function handleHostFormSubmit(e) {
 
   try {
     const spaceData = { host_name, space_name, capacity, fee, parking_info, location, description };
-    let newSpace;
-
-    if (state.syncMode === 'live') {
-      newSpace = await supabaseDb.createSpace(spaceData);
-    } else {
-      newSpace = localDb.createSpace(spaceData);
-    }
+    await supabaseDb.createSpace(spaceData);
 
     showToast(`"${space_name}" 공간이 성공적으로 개설되었습니다!`, 'success');
     document.getElementById('hostForm').reset();
@@ -603,7 +413,7 @@ async function handleJoinFormSubmit(e) {
   
   const space_id = document.getElementById('joinSpaceId').value;
   const user_name = document.getElementById('joinName').value.trim();
-  const user_phone = document.getElementById('joinPhone').value.trim(); // 4 digits check
+  const user_phone = document.getElementById('joinPhone').value.trim();
   const party_size = parseInt(document.getElementById('joinCount').value || 1);
 
   if (user_phone.length !== 4 || isNaN(user_phone)) {
@@ -645,15 +455,8 @@ async function handleJoinFormSubmit(e) {
     }
 
     const parking_required = document.getElementById('joinParking').checked;
-
     const regData = { space_id, user_name, user_phone, party_size, parking_required };
-    let newReg;
-
-    if (state.syncMode === 'live') {
-      newReg = await supabaseDb.createRegistration(regData);
-    } else {
-      newReg = localDb.createRegistration(regData);
-    }
+    const newReg = await supabaseDb.createRegistration(regData);
 
     // Save my registration ID to track cancel option
     state.myRegistrationIds.push(newReg.id);
@@ -674,13 +477,7 @@ async function handleJoinFormSubmit(e) {
 // Cancel registration
 async function cancelRegistration(regId, phoneCode) {
   try {
-    let success = false;
-    if (state.syncMode === 'live') {
-      success = await supabaseDb.deleteRegistration(regId, phoneCode);
-    } else {
-      success = localDb.deleteRegistration(regId);
-    }
-
+    const success = await supabaseDb.deleteRegistration(regId, phoneCode);
     if (success) {
       // Remove from my list
       state.myRegistrationIds = state.myRegistrationIds.filter(id => id !== regId);
@@ -689,11 +486,11 @@ async function cancelRegistration(regId, phoneCode) {
       showToast('참석 신청이 취소되었습니다.', 'info');
       await loadData();
     } else {
-      showToast('참석 신청 취소에 실패했습니다. 비밀번호(전화번호 뒷자리)가 일치하지 않거나 이미 처리되었습니다.', 'error');
+      showToast('참석 신청 취소에 실패했습니다.', 'error');
     }
   } catch (err) {
     console.error(err);
-    showToast('취소 처리 중 오류가 발생했습니다.', 'error');
+    showToast('취소 처리 중 오류가 발생했습니다. 정보가 불일치할 수 있습니다.', 'error');
   }
 }
 
@@ -762,93 +559,10 @@ function showToast(message, type = 'info') {
   }, 3500);
 }
 
-// Test Connection for Supabase
-async function testSupabaseConnection(url, key) {
-  const resultText = document.getElementById('connectionResultText');
-  resultText.className = 'connection-result';
-  resultText.textContent = '연결 시도 중...';
-
-  if (!url || !key) {
-    resultText.className = 'connection-result error';
-    resultText.textContent = 'URL과 Key를 모두 입력해주세요.';
-    return false;
-  }
-
-  try {
-    let cleanUrl = url.trim();
-    if (cleanUrl.endsWith('/rest/v1/')) {
-      cleanUrl = cleanUrl.slice(0, -9);
-    } else if (cleanUrl.endsWith('/rest/v1')) {
-      cleanUrl = cleanUrl.slice(0, -8);
-    }
-    const client = supabase.createClient(cleanUrl, key);
-    // Simple test query
-    const { error } = await client.from('spaces').select('id').limit(1);
-    
-    if (error) {
-      // Check if table missing error or credential error
-      if (error.code === 'PGRST116' || error.message.includes('relation "spaces" does not exist')) {
-        resultText.className = 'connection-result success';
-        resultText.textContent = '연결 성공! 단, 테이블이 아직 존재하지 않습니다. 아래 SQL을 실행해 주세요.';
-        return client;
-      }
-      throw error;
-    }
-
-    resultText.className = 'connection-result success';
-    resultText.textContent = '성공적으로 연결되었습니다! 설정이 저장되었습니다.';
-    return client;
-  } catch (err) {
-    console.error(err);
-    resultText.className = 'connection-result error';
-    resultText.textContent = `연결 실패: ${err.message || '인증 정보 혹은 네트워크 상태를 확인하세요.'}`;
-    return false;
-  }
-}
-
-// Backup Functions (Export / Import JSON)
-function exportDemoData() {
-  const spaces = localDb.getSpaces();
-  const regs = localDb.getRegistrations();
-  const backup = { spaces, registrations: regs, exportedAt: new Date().toISOString() };
-
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
-  const downloadAnchor = document.createElement('a');
-  downloadAnchor.setAttribute("href", dataStr);
-  downloadAnchor.setAttribute("download", `our_space_backup_${new Date().toISOString().split('T')[0]}.json`);
-  document.body.appendChild(downloadAnchor);
-  downloadAnchor.click();
-  downloadAnchor.remove();
-  showToast('데이터 백업 파일 다운로드가 시작되었습니다.', 'success');
-}
-
-function importDemoData(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    try {
-      const data = JSON.parse(evt.target.result);
-      if (data.spaces && data.registrations) {
-        localDb.saveSpaces(data.spaces);
-        localDb.saveRegistrations(data.registrations);
-        showToast('성공적으로 데이터를 복구했습니다!', 'success');
-        loadData();
-      } else {
-        showToast('올바른 백업 파일 형식이 아닙니다.', 'error');
-      }
-    } catch (err) {
-      showToast('파일을 읽는 도중 오류가 발생했습니다.', 'error');
-    }
-  };
-  reader.readAsText(file);
-}
-
 // Event Listeners Initialization
 document.addEventListener('DOMContentLoaded', () => {
-  // Load settings & data
-  loadSettings();
+  // Initialize Supabase and load data
+  initSupabase();
   loadData();
 
   // Tab Events
@@ -891,95 +605,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Join Space Form Submit
   document.getElementById('joinForm').addEventListener('submit', handleJoinFormSubmit);
-
-  // Settings Drawer Toggle
-  const settingsDrawer = document.getElementById('settingsDrawer');
-  document.getElementById('btnSettings').addEventListener('click', () => {
-    settingsDrawer.classList.add('active');
-  });
-  document.getElementById('btnSettingsClose').addEventListener('click', () => {
-    settingsDrawer.classList.remove('active');
-  });
-  settingsDrawer.addEventListener('click', (e) => {
-    if (e.target.id === 'settingsDrawer') settingsDrawer.classList.remove('active');
-  });
-
-  // Settings sync mode switch toggle buttons
-  const btnDemo = document.getElementById('modeDemo');
-  const btnLive = document.getElementById('modeLive');
-  const configArea = document.getElementById('supabaseConfigArea');
-
-  btnDemo.addEventListener('click', () => {
-    btnDemo.classList.add('active');
-    btnLive.classList.remove('active');
-    configArea.classList.add('hidden');
-    state.syncMode = 'demo';
-    localStorage.setItem('our_space_sync_mode', 'demo');
-    updateConnectionStatusUI(false);
-    loadData();
-    showToast('데모 모드로 전환되었습니다 (내 기기에만 저장).', 'info');
-  });
-
-  btnLive.addEventListener('click', () => {
-    btnLive.classList.add('active');
-    btnDemo.classList.remove('active');
-    configArea.classList.remove('hidden');
-    state.syncMode = 'live';
-    localStorage.setItem('our_space_sync_mode', 'live');
-    
-    const savedUrl = localStorage.getItem('our_space_sb_url') || '';
-    const savedKey = localStorage.getItem('our_space_sb_key') || '';
-    
-    if (savedUrl && savedKey) {
-      initSupabase();
-      loadData();
-    } else {
-      updateConnectionStatusUI(true, 'error');
-      showToast('Supabase API 설정을 입력해 주세요.', 'info');
-    }
-  });
-
-  // Test and save Supabase credentials
-  document.getElementById('btnTestConnection').addEventListener('click', async () => {
-    const url = document.getElementById('sbUrl').value.trim();
-    const key = document.getElementById('sbKey').value.trim();
-
-    const client = await testSupabaseConnection(url, key);
-    if (client) {
-      localStorage.setItem('our_space_sb_url', url);
-      localStorage.setItem('our_space_sb_key', key);
-      state.supabaseUrl = url;
-      state.supabaseKey = key;
-      state.supabaseClient = client;
-      state.syncMode = 'live';
-      updateConnectionStatusUI(true, 'ok');
-      await loadData();
-    } else {
-      updateConnectionStatusUI(true, 'error');
-    }
-  });
-
-  // Copy SQL script helper
-  document.getElementById('btnCopySql').addEventListener('click', () => {
-    const code = document.getElementById('sqlCode').innerText;
-    navigator.clipboard.writeText(code).then(() => {
-      const btn = document.getElementById('btnCopySql');
-      btn.textContent = '복사 완료!';
-      setTimeout(() => {
-        btn.textContent = 'SQL 복사';
-      }, 2000);
-      showToast('SQL 스크립트가 클립보드에 복사되었습니다.', 'success');
-    }).catch(err => {
-      showToast('클립보드 복사에 실패했습니다.', 'error');
-    });
-  });
-
-  // Backup file buttons logic
-  document.getElementById('btnExportData').addEventListener('click', exportDemoData);
-  
-  const fileInput = document.getElementById('importFileInput');
-  document.getElementById('btnImportData').addEventListener('click', () => {
-    fileInput.click();
-  });
-  fileInput.addEventListener('change', importDemoData);
 });

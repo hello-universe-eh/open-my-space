@@ -31,15 +31,7 @@
             <h1>우리들의 공간</h1>
           </div>
         </div>
-        <div class="header-actions">
-          <span class="status-indicator demo-mode" id="connectionStatus">
-            <span class="status-dot"></span>
-            <span class="status-text">데모 모드 (기기 내 저장)</span>
-          </span>
-          <button class="icon-btn" id="btnSettings" title="설정">
-            <i data-lucide="settings"></i>
-          </button>
-        </div>
+
       </div>
     </header>
 
@@ -315,107 +307,7 @@
     </div>
   </div>
 
-  <!-- Drawer: Settings & Supabase Configuration -->
-  <div class="drawer-backdrop" id="settingsDrawer">
-    <div class="drawer-content">
-      <div class="drawer-header">
-        <h2>환경 설정</h2>
-        <button class="modal-close" id="btnSettingsClose">
-          <i data-lucide="x"></i>
-        </button>
-      </div>
-      <div class="drawer-body">
-        <div class="settings-section">
-          <h3>데이터 동기화 모드</h3>
-          <div class="toggle-group">
-            <button class="toggle-btn active" id="modeDemo">로컬 데모</button>
-            <button class="toggle-btn" id="modeLive">실시간 동기화 (Supabase)</button>
-          </div>
-          <p class="settings-desc">
-            로컬 데모는 브라우저 내부 저장소(LocalStorage)를 사용하여 나에게만 데이터가 보입니다. 
-            모든 교인이 함께 사용하려면 실시간 동기화 모드로 설정해 주세요.
-          </p>
-        </div>
 
-        <div id="supabaseConfigArea" class="settings-section hidden">
-          <h3>Supabase API 설정</h3>
-          <p class="settings-desc">
-            Supabase(supabase.com) 가입 후 무료 프로젝트를 생성하여 아래 정보들을 입력하세요. 
-            해당 정보는 브라우저에 안전하게 저장됩니다.
-          </p>
-          <div class="form-group">
-            <label for="sbUrl">Supabase URL</label>
-            <input type="text" id="sbUrl" placeholder="https://xxxx.supabase.co">
-          </div>
-          <div class="form-group">
-            <label for="sbKey">Supabase Anon Key</label>
-            <input type="password" id="sbKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
-          </div>
-          
-          <button class="btn-secondary full-width" id="btnTestConnection">
-            <i data-lucide="activity"></i>
-            <span>연결 테스트 & 저장</span>
-          </button>
-          <p class="connection-result" id="connectionResultText"></p>
-
-          <hr class="settings-divider">
-
-          <h3>Supabase 테이블 생성 SQL</h3>
-          <p class="settings-desc">
-            Supabase의 SQL Editor에 아래 스크립트를 복사하여 실행하면 데이터베이스 세팅이 끝납니다.
-          </p>
-          <div class="code-block-wrapper">
-            <pre><code id="sqlCode">-- 1. spaces 테이블 생성
-CREATE TABLE spaces (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-  host_name text NOT NULL,
-  space_name text NOT NULL,
-  location text NOT NULL,
-  capacity integer NOT NULL,
-  fee text NOT NULL,
-  parking_info text DEFAULT 'none' NOT NULL,
-  description text
-);
-
--- 2. registrations 테이블 생성
-CREATE TABLE registrations (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-  space_id uuid REFERENCES spaces(id) ON DELETE CASCADE,
-  user_name text NOT NULL,
-  user_phone text NOT NULL,
-  party_size integer DEFAULT 1 NOT NULL,
-  parking_required boolean DEFAULT false NOT NULL,
-  UNIQUE (user_name, user_phone)
-);
-
--- 3. Row Level Security(RLS) 비활성화 (누구나 읽기/쓰기가 가능하도록 임시 해제)
-ALTER TABLE spaces DISABLE ROW LEVEL SECURITY;
-ALTER TABLE registrations DISABLE ROW LEVEL SECURITY;
-</code></pre>
-            <button class="btn-copy" id="btnCopySql">SQL 복사</button>
-          </div>
-        </div>
-
-        <div class="settings-section">
-          <h3>수동 데이터 백업/복구 (데모 모드용)</h3>
-          <p class="settings-desc">로컬 데모 데이터를 파일로 백업하거나 다른 브라우저로 가져갈 수 있습니다.</p>
-          <div class="btn-row">
-            <button class="btn-secondary" id="btnExportData">
-              <i data-lucide="download"></i>
-              <span>백업 내보내기</span>
-            </button>
-            <button class="btn-secondary" id="btnImportData">
-              <i data-lucide="upload"></i>
-              <span>복구 가져오기</span>
-            </button>
-          </div>
-          <input type="file" id="importFileInput" accept=".json" style="display: none;">
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- Alert Toasts Container -->
   <div class="toast-container" id="toastContainer"></div>
