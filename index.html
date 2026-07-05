@@ -128,6 +128,13 @@
                 </div>
               </div>
               <div class="form-group">
+                <label for="hostPhone">호스트 연락처 뒷자리 (확인용 4자리) <span class="required">*</span></label>
+                <div class="input-with-icon">
+                  <i data-lucide="phone"></i>
+                  <input type="text" id="hostPhone" required maxlength="4" pattern="[0-9]{4}" placeholder="예: 1234">
+                </div>
+              </div>
+              <div class="form-group">
                 <label for="spaceName">공간 이름 <span class="required">*</span></label>
                 <div class="input-with-icon">
                   <i data-lucide="bookmark"></i>
@@ -195,9 +202,13 @@
         <i data-lucide="x"></i>
       </button>
       <div class="modal-header">
-        <div class="badge-row">
+        <div class="badge-row" style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding-right: 2.5rem;">
           <span class="badge" id="modalFeeBadge">회비 없음</span>
           <span class="badge status-open" id="modalStatusBadge">모집중</span>
+          <button class="btn-edit-space-top" id="btnVerifyHostTop">
+            <i data-lucide="edit-3"></i>
+            <span>공간 정보 수정</span>
+          </button>
         </div>
         <h2 id="modalSpaceName">공간 이름</h2>
         <p class="host-info">호스트: <strong id="modalHostName">홍길동</strong></p>
@@ -303,6 +314,25 @@
             <span>신청 취소하기</span>
           </button>
         </div>
+
+        <!-- Host Management Section (shows if user is the host) -->
+        <div class="host-management-section hidden" id="hostManagementSection" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-light);">
+          <h3 style="font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.35rem;">
+            <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
+            <span>공간 관리 (호스트 전용)</span>
+          </h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <button class="btn-secondary" id="btnEditSpace" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+              <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
+              <span>공간 정보 수정</span>
+            </button>
+            <button class="btn-danger-outline" id="btnDeleteSpace" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+              <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+              <span>공간 삭제 (취소)</span>
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

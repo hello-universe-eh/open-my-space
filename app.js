@@ -7,6 +7,7 @@ let state = {
   registrations: [],
   activeTab: 'tab-list',
   selectedSpace: null,
+  editingSpaceId: null, // ID of space currently being edited
   searchQuery: '',
   myRegistrationIds: JSON.parse(localStorage.getItem('our_space_my_regs') || '[]')
 };
@@ -48,6 +49,26 @@ const supabaseDb = {
       .select();
     if (error) throw error;
     return data[0];
+  },
+  updateSpace: async (id, space) => {
+    if (!state.supabaseClient) throw new Error('Supabase client not initialized');
+    const { data, error } = await state.supabaseClient
+      .from('spaces')
+      .update(space)
+      .eq('id', id)
+      .select();
+    if (error) throw error;
+    return data[0];
+  },
+  deleteSpace: async (id, hostPhone) => {
+    if (!state.supabaseClient) throw new Error('Supabase client not initialized');
+    const { error } = await state.supabaseClient
+      .from('spaces')
+      .delete()
+      .eq('id', id)
+      .eq('host_phone', hostPhone);
+    if (error) throw error;
+    return true;
   },
   getRegistrations: async () => {
     if (!state.supabaseClient) throw new Error('Supabase client not initialized');
@@ -100,6 +121,21 @@ async function loadData() {
   } catch (err) {
     console.error('Error fetching data:', err);
     showToast('실시간 데이터를 불러오는 중 오류가 발생했습니다.', 'error');
+    
+    // Clear loading state and show a friendly error card
+    const grid = document.getElementById('spaceGrid');
+    grid.innerHTML = `
+      <div class="empty-state" style="border-color: rgba(239, 68, 68, 0.15); background-color: rgba(239, 68, 68, 0.02);">
+        <i data-lucide="alert-triangle" style="color: #dc2626;"></i>
+        <h3 style="color: #dc2626;">데이터 연결 실패</h3>
+        <p>실시간 서버와 연결을 설정하지 못했습니다.</p>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; max-width: 420px; line-height: 1.5;">
+          데이터베이스에 <strong>spaces</strong> 및 <strong>registrations</strong> 테이블이 생성되었는지 확인해 주세요.<br>
+          (가이드 문서의 SQL 스크립트를 Supabase SQL Editor에서 실행하셔야 합니다.)
+        </p>
+      </div>
+    `;
+    lucide.createIcons();
   } finally {
     showGridLoading(false);
   }
@@ -360,6 +396,62 @@ function openSpaceDetailsModal(space) {
     }
   }
 
+  // --- Host Space Management Configuration ---
+  const hostMgmtSec = document.getElementById('hostManagementSection');
+  const btnVerifyHostTop = document.getElementById('btnVerifyHostTop');
+
+  // Hidden by default when opening modal
+  hostMgmtSec.classList.add('hidden');
+  btnVerifyHostTop.classList.remove('hidden');
+
+  // Bind Verify Host Button
+  btnVerifyHostTop.onclick = () => {
+    const codeInput = prompt('호스트 연락처 뒷자리 4자리를 입력해주세요:');
+    if (codeInput === null) return;
+
+    if (codeInput === space.host_phone) {
+      showToast('호스트 인증에 성공했습니다! 관리 메뉴가 활성화됩니다.', 'success');
+      
+      // Toggle visibility
+      btnVerifyHostTop.classList.add('hidden');
+      hostMgmtSec.classList.remove('hidden');
+
+      // Bind Edit Button
+      document.getElementById('btnEditSpace').onclick = () => {
+        closeModal();
+        state.editingSpaceId = space.id;
+        
+        // Load details into Host Form
+        document.getElementById('hostName').value = space.host_name;
+        document.getElementById('hostPhone').value = space.host_phone;
+        document.getElementById('spaceName').value = space.space_name;
+        document.getElementById('maxCapacity').value = space.capacity;
+        document.getElementById('spaceFee').value = space.fee;
+        document.getElementById('spaceParking').value = space.parking_info;
+        document.getElementById('spaceLocation').value = space.location;
+        document.getElementById('spaceDescription').value = space.description || '';
+
+        // Update Form Submit Button for edit mode
+        const submitBtn = document.getElementById('btnSubmitSpace');
+        submitBtn.innerHTML = `<i data-lucide="edit-3"></i> <span>공간 정보 수정 완료</span>`;
+        lucide.createIcons();
+
+        // Switch to Host Tab
+        switchTab('tab-host');
+        showToast('공간 수정 모드로 진입했습니다. 양식을 수정 후 완료해 주세요.', 'info');
+      };
+
+      // Bind Delete Button
+      document.getElementById('btnDeleteSpace').onclick = async () => {
+        if (confirm('이 모임 공간을 정말 삭제하시겠습니까?\n삭제 시 공간에 접수된 모든 예배 참석 신청 명단도 함께 취소됩니다.')) {
+          await deleteHostSpace(space.id, space.host_phone);
+        }
+      };
+    } else {
+      showToast('호스트 연락처 번호가 일치하지 않습니다.', 'error');
+    }
+  };
+
   modal.classList.add('active');
 }
 
@@ -376,6 +468,7 @@ async function handleHostFormSubmit(e) {
   e.preventDefault();
   
   const host_name = document.getElementById('hostName').value.trim();
+  const host_phone = document.getElementById('hostPhone').value.trim();
   const space_name = document.getElementById('spaceName').value.trim();
   const capacity = parseInt(document.getElementById('maxCapacity').value);
   const fee = document.getElementById('spaceFee').value.trim();
@@ -383,15 +476,35 @@ async function handleHostFormSubmit(e) {
   const location = document.getElementById('spaceLocation').value.trim();
   const description = document.getElementById('spaceDescription').value.trim();
 
+  if (host_phone.length !== 4 || isNaN(host_phone)) {
+    showToast('호스트 연락처 뒷자리 4자리를 정확히 입력해주세요.', 'error');
+    return;
+  }
+
   const btn = document.getElementById('btnSubmitSpace');
   btn.disabled = true;
-  btn.innerHTML = `<div class="spinner" style="width: 16px; height: 16px; margin: 0; border-width: 2px;"></div> &nbsp; 등록 중...`;
+  
+  const isEditing = state.editingSpaceId !== null;
+  btn.innerHTML = `<div class="spinner" style="width: 16px; height: 16px; margin: 0; border-width: 2px;"></div> &nbsp; ${isEditing ? '수정' : '등록'} 중...`;
 
   try {
-    const spaceData = { host_name, space_name, capacity, fee, parking_info, location, description };
-    await supabaseDb.createSpace(spaceData);
+    const spaceData = { host_name, host_phone, space_name, capacity, fee, parking_info, location, description };
+    
+    if (isEditing) {
+      // Update Space
+      await supabaseDb.updateSpace(state.editingSpaceId, spaceData);
+      showToast(`"${space_name}" 공간 정보가 수정되었습니다!`, 'success');
+      
+      // Reset Form State
+      state.editingSpaceId = null;
+      btn.innerHTML = `<i data-lucide="check"></i> <span>공간 개설하기</span>`;
+    } else {
+      // Create Space
+      await supabaseDb.createSpace(spaceData);
+      showToast(`"${space_name}" 공간이 성공적으로 개설되었습니다!`, 'success');
+      btn.innerHTML = `<i data-lucide="check"></i> <span>공간 개설하기</span>`;
+    }
 
-    showToast(`"${space_name}" 공간이 성공적으로 개설되었습니다!`, 'success');
     document.getElementById('hostForm').reset();
     
     // Switch to space list tab
@@ -399,10 +512,10 @@ async function handleHostFormSubmit(e) {
     await loadData();
   } catch (err) {
     console.error(err);
-    showToast('공간 개설 중 오류가 발생했습니다. 입력 정보를 확인하세요.', 'error');
+    showToast('작업 처리 중 오류가 발생했습니다. 입력 정보를 확인하세요.', 'error');
+    btn.innerHTML = `<i data-lucide="check"></i> <span>${isEditing ? '공간 정보 수정 완료' : '공간 개설하기'}</span>`;
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `<i data-lucide="check"></i> <span>공간 개설하기</span>`;
     lucide.createIcons();
   }
 }
@@ -494,10 +607,35 @@ async function cancelRegistration(regId, phoneCode) {
   }
 }
 
+// Cancel Host Space (Delete Space)
+async function deleteHostSpace(spaceId, hostPhone) {
+  try {
+    const success = await supabaseDb.deleteSpace(spaceId, hostPhone);
+    if (success) {
+      showToast('모임 공간이 삭제(취소)되었습니다.', 'info');
+      closeModal();
+      await loadData();
+    } else {
+      showToast('공간 삭제에 실패했습니다.', 'error');
+    }
+  } catch (err) {
+    console.error(err);
+    showToast('오류가 발생했습니다. 개설 정보를 삭제하지 못했습니다.', 'error');
+  }
+}
+
 // Switch Tabs
 function switchTab(tabId) {
   state.activeTab = tabId;
   
+  // If leaving host tab, reset edit state if form was abandoned
+  if (tabId !== 'tab-host' && state.editingSpaceId !== null) {
+    state.editingSpaceId = null;
+    document.getElementById('hostForm').reset();
+    const submitBtn = document.getElementById('btnSubmitSpace');
+    submitBtn.innerHTML = `<i data-lucide="check"></i> <span>공간 개설하기</span>`;
+  }
+
   // Update Tab buttons
   document.querySelectorAll('.tab-btn').forEach(btn => {
     if (btn.dataset.tab === tabId) {
