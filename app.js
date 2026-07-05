@@ -396,6 +396,29 @@ function openSpaceDetailsModal(space) {
     }
   }
 
+  // Bind Universal Registration Cancellation Event
+  document.getElementById('btnVerifyCancel').onclick = async () => {
+    const nameInput = prompt('신청 시 입력했던 이름을 입력해주세요:');
+    if (!nameInput) return;
+    
+    const phoneInput = prompt('신청 시 입력했던 연락처 뒷자리 4자리를 입력해주세요:');
+    if (!phoneInput) return;
+    
+    if (phoneInput.length !== 4 || isNaN(phoneInput)) {
+      showToast('연락처 뒷자리 4자리를 정확히 입력해주세요.', 'error');
+      return;
+    }
+    
+    const matchedReg = spaceRegs.find(r => r.user_name === nameInput.trim() && r.user_phone === phoneInput.trim());
+    if (matchedReg) {
+      if (confirm(`${nameInput}님의 참석 신청(${matchedReg.party_size}명)을 취소하시겠습니까?`)) {
+        await cancelRegistration(matchedReg.id, matchedReg.user_phone);
+      }
+    } else {
+      showToast('입력하신 정보와 일치하는 신청 내역을 찾을 수 없습니다.', 'error');
+    }
+  };
+
   // --- Host Space Management Configuration ---
   const hostMgmtSec = document.getElementById('hostManagementSection');
   const btnVerifyHostTop = document.getElementById('btnVerifyHostTop');

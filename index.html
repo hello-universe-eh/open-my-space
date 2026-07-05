@@ -151,7 +151,7 @@
               <div class="form-group">
                 <label for="spaceFee">회비 (기타 비용 포함) <span class="required">*</span></label>
                 <div class="input-with-icon">
-                  <i data-lucide="krw"></i>
+                  <i data-lucide="banknote"></i>
                   <input type="text" id="spaceFee" required placeholder="예: 없음 또는 5,000원(다과비)">
                 </div>
               </div>
@@ -301,6 +301,11 @@
               <span>예배 공간 참석 신청</span>
             </button>
           </form>
+          <div style="text-align: center; margin-top: 1rem; border-top: 1px dashed var(--border-light); padding-top: 0.75rem;">
+            <button type="button" class="btn-link" id="btnVerifyCancel" style="background: none; border: none; color: var(--text-muted); font-size: 0.8rem; font-weight: 500; text-decoration: underline; cursor: pointer;">
+              이미 신청하셨나요? 신청 취소하기
+            </button>
+          </div>
         </div>
 
         <!-- Already Joined Info (shows if user is registered in this session) -->
