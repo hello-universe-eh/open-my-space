@@ -19,7 +19,7 @@ function verifyAdminKey(input) {
   for (let i = 0; i < str.length; i++) {
     hash = (hash * 31 + str.charCodeAt(i)) & 0xFFFFFFFF;
   }
-  return hash === 1754688;
+  return hash === 54395385;
 }
 
 // Convert 24h format "14:30" to "오후 2시 30분"
