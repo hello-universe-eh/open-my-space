@@ -694,6 +694,10 @@ body {
   padding-left: 2.5rem !important;
 }
 
+.input-with-icon.no-icon input, .input-with-icon.no-icon select {
+  padding-left: 0.75rem !important;
+}
+
 .input-with-icon input:focus, .input-with-icon select:focus, .form-group textarea:focus, .form-group input[type="text"]:focus {
   outline: none;
   border-color: var(--border-focus);

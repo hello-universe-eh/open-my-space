@@ -22,6 +22,28 @@ function verifyAdminKey(input) {
   return hash === 1754688;
 }
 
+// Convert 24h format "14:30" to "오후 2시 30분"
+function formatTimeDisplay(timeStr) {
+  if (!timeStr) return '';
+  const [hourStr, minStr] = timeStr.split(':');
+  const hour = parseInt(hourStr);
+  const minute = parseInt(minStr || '0');
+  
+  let timeText = '';
+  if (hour === 12) timeText = '오후 12시';
+  else if (hour === 24 || hour === 0) timeText = '오전 12시';
+  else {
+    const ampm = hour < 12 ? '오전' : '오후';
+    const displayHour = hour > 12 ? hour - 12 : hour;
+    timeText = `${ampm} ${displayHour}시`;
+  }
+  
+  if (minute > 0) {
+    timeText += ` ${minute}분`;
+  }
+  return timeText;
+}
+
 // Initialize Supabase Client
 function initSupabase() {
   if (typeof supabase !== 'undefined' && state.supabaseUrl && state.supabaseKey) {
@@ -251,6 +273,11 @@ function renderSpaces() {
           <span class="info-text"><span class="badge ${feeBadgeClass}">${escapeHtml(feeBadgeText)}</span></span>
         </div>
         <div class="space-info-row">
+          <i data-lucide="clock"></i>
+          <span class="info-label">시간</span>
+          <span class="info-text">${formatTimeDisplay(space.open_time || '14:00')} ~ ${formatTimeDisplay(space.close_time || '16:00')}</span>
+        </div>
+        <div class="space-info-row">
           <i data-lucide="car"></i>
           <span class="info-label">주차</span>
           <span class="info-text">${escapeHtml(parkingText)}</span>
@@ -314,6 +341,11 @@ function openSpaceDetailsModal(space) {
 
   // Set parking info
   document.getElementById('modalParking').textContent = space.parking_info === 'yes' ? '주차 가능' : '주차 불가능';
+
+  // Set time info
+  const openTimeStr = formatTimeDisplay(space.open_time || '14:00');
+  const closeTimeStr = formatTimeDisplay(space.close_time || '16:00');
+  document.getElementById('modalTime').textContent = `${openTimeStr} ~ ${closeTimeStr}`;
 
   // Set status badge
   const statusBadge = document.getElementById('modalStatusBadge');
@@ -475,6 +507,12 @@ function openSpaceDetailsModal(space) {
         document.getElementById('spaceName').value = space.space_name;
         document.getElementById('maxCapacity').value = space.capacity;
         document.getElementById('spaceFee').value = space.fee;
+        const [oHour, oMin] = (space.open_time || '14:00').split(':');
+        const [cHour, cMin] = (space.close_time || '16:00').split(':');
+        document.getElementById('openHour').value = oHour;
+        document.getElementById('openMinute').value = oMin;
+        document.getElementById('closeHour').value = cHour;
+        document.getElementById('closeMinute').value = cMin;
         document.getElementById('spaceParking').value = space.parking_info;
         document.getElementById('spaceLocation').value = space.location;
         document.getElementById('spaceDescription').value = space.description || '';
@@ -521,6 +559,8 @@ async function handleHostFormSubmit(e) {
   const space_name = document.getElementById('spaceName').value.trim();
   const capacity = parseInt(document.getElementById('maxCapacity').value);
   const fee = document.getElementById('spaceFee').value.trim();
+  const open_time = document.getElementById('openHour').value + ':' + document.getElementById('openMinute').value;
+  const close_time = document.getElementById('closeHour').value + ':' + document.getElementById('closeMinute').value;
   const parking_info = document.getElementById('spaceParking').value;
   const location = document.getElementById('spaceLocation').value.trim();
   const description = document.getElementById('spaceDescription').value.trim();
@@ -537,7 +577,7 @@ async function handleHostFormSubmit(e) {
   btn.innerHTML = `<div class="spinner" style="width: 16px; height: 16px; margin: 0; border-width: 2px;"></div> &nbsp; ${isEditing ? '수정' : '등록'} 중...`;
 
   try {
-    const spaceData = { host_name, host_phone, host_party_size, space_name, capacity, fee, parking_info, location, description };
+    const spaceData = { host_name, host_phone, host_party_size, space_name, capacity, fee, open_time, close_time, parking_info, location, description };
     
     if (isEditing) {
       // Update Space

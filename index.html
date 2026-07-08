@@ -28,7 +28,7 @@
           </div>
           <div class="brand-text">
             <span class="subtitle">BlueLight 강남교회</span>
-            <h1>우리들의 공간</h1>
+            <h1>우리들의 예배 공간</h1>
           </div>
         </div>
 
@@ -163,6 +163,110 @@
                 </div>
               </div>
               <div class="form-group">
+                <label>모임 시간 <span class="required">*</span></label>
+                <div style="display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;">
+                  <!-- Open Time (Hour & Minute) -->
+                  <div style="display: flex; align-items: center; gap: 0.25rem; flex: 1; min-width: 140px;">
+                    <div class="input-with-icon no-icon" style="flex: 1;">
+                      <select id="openHour" required>
+                        <option value="00">00시</option>
+                        <option value="01">01시</option>
+                        <option value="02">02시</option>
+                        <option value="03">03시</option>
+                        <option value="04">04시</option>
+                        <option value="05">05시</option>
+                        <option value="06">06시</option>
+                        <option value="07">07시</option>
+                        <option value="08">08시</option>
+                        <option value="09">09시</option>
+                        <option value="10">10시</option>
+                        <option value="11">11시</option>
+                        <option value="12">12시</option>
+                        <option value="13">13시</option>
+                        <option value="14" selected>14시</option>
+                        <option value="15">15시</option>
+                        <option value="16">16시</option>
+                        <option value="17">17시</option>
+                        <option value="18">18시</option>
+                        <option value="19">19시</option>
+                        <option value="20">20시</option>
+                        <option value="21">21시</option>
+                        <option value="22">22시</option>
+                        <option value="23">23시</option>
+                        <option value="24">24시</option>
+                      </select>
+                    </div>
+                    <div class="input-with-icon no-icon" style="flex: 1;">
+                      <select id="openMinute" required>
+                        <option value="00" selected>00분</option>
+                        <option value="05">05분</option>
+                        <option value="10">10분</option>
+                        <option value="15">15분</option>
+                        <option value="20">20분</option>
+                        <option value="25">25분</option>
+                        <option value="30">30분</option>
+                        <option value="35">35분</option>
+                        <option value="40">40분</option>
+                        <option value="45">45분</option>
+                        <option value="50">50분</option>
+                        <option value="55">55분</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <span style="color: var(--text-muted); font-weight: 500; padding: 0 0.15rem;">~</span>
+                  
+                  <!-- Close Time (Hour & Minute) -->
+                  <div style="display: flex; align-items: center; gap: 0.25rem; flex: 1; min-width: 140px;">
+                    <div class="input-with-icon no-icon" style="flex: 1;">
+                      <select id="closeHour" required>
+                        <option value="00">00시</option>
+                        <option value="01">01시</option>
+                        <option value="02">02시</option>
+                        <option value="03">03시</option>
+                        <option value="04">04시</option>
+                        <option value="05">05시</option>
+                        <option value="06">06시</option>
+                        <option value="07">07시</option>
+                        <option value="08">08시</option>
+                        <option value="09">09시</option>
+                        <option value="10">10시</option>
+                        <option value="11">11시</option>
+                        <option value="12">12시</option>
+                        <option value="13">13시</option>
+                        <option value="14">14시</option>
+                        <option value="15">15시</option>
+                        <option value="16" selected>16시</option>
+                        <option value="17">17시</option>
+                        <option value="18">18시</option>
+                        <option value="19">19시</option>
+                        <option value="20">20시</option>
+                        <option value="21">21시</option>
+                        <option value="22">22시</option>
+                        <option value="23">23시</option>
+                        <option value="24">24시</option>
+                      </select>
+                    </div>
+                    <div class="input-with-icon no-icon" style="flex: 1;">
+                      <select id="closeMinute" required>
+                        <option value="00" selected>00분</option>
+                        <option value="05">05분</option>
+                        <option value="10">10분</option>
+                        <option value="15">15분</option>
+                        <option value="20">20분</option>
+                        <option value="25">25분</option>
+                        <option value="30">30분</option>
+                        <option value="35">35분</option>
+                        <option value="40">40분</option>
+                        <option value="45">45분</option>
+                        <option value="50">50분</option>
+                        <option value="55">55분</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
                 <label for="spaceParking">주차 지원 여부 <span class="required">*</span></label>
                 <div class="input-with-icon">
                   <i data-lucide="car"></i>
@@ -198,7 +302,7 @@
 
     <!-- Footer -->
     <footer class="app-footer">
-      <p>© 2026 우리들의 공간 (Our Space) • 공동체 지향 예배 공간 나누기</p>
+      <p>© 2026 우리들의 예배 공간 • 공동체 지향 예배 공간 나누기</p>
     </footer>
   </div>
 
@@ -232,6 +336,13 @@
                 <span>지도 앱에서 보기</span>
                 <i data-lucide="external-link"></i>
               </a>
+            </div>
+          </div>
+          <div class="info-item">
+            <i data-lucide="clock"></i>
+            <div>
+              <h3>모임 시간</h3>
+              <p id="modalTime">오후 2시 ~ 오후 4시</p>
             </div>
           </div>
           <div class="info-item">
