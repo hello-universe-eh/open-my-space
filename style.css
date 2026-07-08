@@ -1077,6 +1077,17 @@ body {
   color: var(--primary);
 }
 
+.space-card.notice-card {
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  background-color: rgba(254, 243, 199, 0.15);
+  box-shadow: 0 4px 12px -3px rgba(217, 119, 6, 0.05);
+}
+
+.space-card.notice-card:hover {
+  border-color: rgba(217, 119, 6, 0.45);
+  box-shadow: var(--shadow-premium), 0 10px 20px -5px rgba(217, 119, 6, 0.08);
+}
+
 /* Responsive adjust */
 @media (max-width: 640px) {
   .filter-bar {

@@ -69,6 +69,7 @@ const supabaseDb = {
     const { data, error } = await state.supabaseClient
       .from('spaces')
       .select('*')
+      .order('notice', { ascending: false })
       .order('created_at', { ascending: false });
     if (error) throw error;
     return data;
@@ -136,7 +137,18 @@ async function loadData() {
   showGridLoading(true);
   try {
     if (state.supabaseClient) {
-      state.spaces = await supabaseDb.getSpaces();
+      const data = await supabaseDb.getSpaces();
+      // local sorting fallback: notice === 'Y' first, then created_at desc
+      data.sort((a, b) => {
+        const aNotice = a.notice === 'Y' ? 1 : 0;
+        const bNotice = b.notice === 'Y' ? 1 : 0;
+        if (aNotice !== bNotice) return bNotice - aNotice;
+        
+        const aTime = new Date(a.created_at || 0).getTime();
+        const bTime = new Date(b.created_at || 0).getTime();
+        return bTime - aTime;
+      });
+      state.spaces = data;
       state.registrations = await supabaseDb.getRegistrations();
     }
     renderSummary();
@@ -239,6 +251,9 @@ function renderSpaces() {
     // Create card element
     const card = document.createElement('div');
     card.className = 'space-card';
+    if (space.notice === 'Y') {
+      card.classList.add('notice-card');
+    }
     card.dataset.id = space.id;
 
     let progressBarClass = '';
@@ -250,12 +265,18 @@ function renderSpaces() {
 
     let parkingText = space.parking_info === 'yes' ? '주차 가능' : '주차 불가능';
 
+    const isNotice = space.notice === 'Y';
+    const noticeBadge = isNotice ? `<span class="badge" style="background-color: var(--accent); color: white; display: inline-flex; align-items: center; gap: 0.15rem; font-weight: 700;"><i data-lucide="bell" style="width: 11px; height: 11px;"></i>공지</span>` : '';
+
     card.innerHTML = `
       <div class="space-card-header">
         <h3>${escapeHtml(space.space_name)}</h3>
-        <span class="badge ${isFull ? 'status-full' : 'status-open'}">
-          ${isFull ? '마감' : '모집중'}
-        </span>
+        <div style="display: flex; gap: 0.35rem; align-items: center;">
+          ${noticeBadge}
+          <span class="badge ${isFull ? 'status-full' : 'status-open'}">
+            ${isFull ? '마감' : '모집중'}
+          </span>
+        </div>
       </div>
       <div class="host">
         <i data-lucide="user" style="width: 14px; height: 14px;"></i>
