@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>우리들의 예배 공간 - 모임 공간 선택</title>
+  <title>BLC 송년예배 - 모임 공간 선택</title>
   <meta name="description" content="교회 공동체를 위한 소그룹 예배 공간 공유 및 신청 플랫폼">
   <!-- Google Fonts: Playfair Display for elegant headings, Plus Jakarta Sans for modern clean body text -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,9 +15,10 @@
   <!-- Supabase CDN Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
-  <link rel="stylesheet" href="style.css?v=1.1">
+  <link rel="stylesheet" href="style.css?v=1.9">
 </head>
 <body>
+  <canvas id="snowCanvas" class="snow-canvas" aria-hidden="true"></canvas>
   <div class="app-container">
     <!-- Header -->
     <header class="app-header">
@@ -28,10 +29,19 @@
           </div>
           <div class="brand-text">
             <span class="subtitle">BlueLight 강남교회</span>
-            <h1>우리들의 예배 공간</h1>
+            <h1>BLC 송년예배</h1>
           </div>
         </div>
-
+        <div class="header-tree" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1.8l1 2 2.2.3-1.6 1.5.4 2.2L12 6.8l-2 1 .4-2.2-1.6-1.5 2.2-.3Z" fill="#fbbf24" stroke="#b45309"/>
+            <path d="M12 6.8 7 12.6h2.8L5.5 18h13l-4.3-5.4H17Z" fill="#2d6a4f" stroke="#1b4332"/>
+            <rect x="10.5" y="18" width="3" height="3.2" rx="0.5" fill="#92400e" stroke="#78350f"/>
+            <circle cx="10.5" cy="11.5" r="0.9" fill="#dc2626" stroke="none"/>
+            <circle cx="14.2" cy="15.5" r="0.9" fill="#fbbf24" stroke="none"/>
+            <circle cx="9.2" cy="15.8" r="0.9" fill="#dc2626" stroke="none"/>
+          </svg>
+        </div>
       </div>
     </header>
 
@@ -90,8 +100,8 @@
           <div class="filter-actions">
             <div class="checkbox-group" style="padding-right: 0.5rem;">
               <input type="checkbox" id="filterParking">
-              <label for="filterParking" style="cursor: pointer; font-weight: 600; font-size: 0.85rem; color: var(--text-main); display: flex; align-items: center; gap: 0.25rem; white-space: nowrap;">
-                <i data-lucide="car" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+              <label for="filterParking" style="cursor: pointer; font-weight: 600; font-size: 0.85rem; color: var(--text-main); display: flex; align-items: center; gap: 0.3rem; white-space: nowrap;">
+                <svg class="christmas-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;"><path d="M4 7h2l1.8 4.2h6.7l1.5-1.7h3.5l-.6 2.7a2.5 2.5 0 0 1-2.4 2.3H7.5Z" fill="#c92a2a" stroke="#991b1b"/><path d="M8.5 14.5v4M15 14.5v4M3.5 18.5h14.5a3 3 0 0 0 3-3" stroke="#b45309"/></svg>
                 <span>주차 가능만 보기</span>
               </label>
             </div>
@@ -123,7 +133,7 @@
               <div class="form-group">
                 <label for="hostName">호스트 이름 <span class="required">*</span></label>
                 <div class="input-with-icon">
-                  <i data-lucide="user"></i>
+                  <svg class="christmas-icon santa-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 6.8 12 2.6a1.5 1.5 0 0 1 2.2-.1L17 5l-1.5 1.8Z" fill="#c92a2a" stroke="#991b1b"/><circle cx="18" cy="5.2" r="1.4" fill="#ffffff" stroke="#991b1b"/><rect x="7.5" y="6.8" width="9" height="2.4" rx="1.2" fill="#ffffff" stroke="#991b1b"/><path d="M8.8 9.2a3.4 3.4 0 1 0 6.4 0"/><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/></svg>
                   <input type="text" id="hostName" required placeholder="예: 김요한">
                 </div>
               </div>
@@ -269,7 +279,7 @@
               <div class="form-group">
                 <label for="spaceParking">주차 지원 여부 <span class="required">*</span></label>
                 <div class="input-with-icon">
-                  <i data-lucide="car"></i>
+                  <svg class="christmas-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h2l1.8 4.2h6.7l1.5-1.7h3.5l-.6 2.7a2.5 2.5 0 0 1-2.4 2.3H7.5Z" fill="#c92a2a" stroke="#991b1b"/><path d="M8.5 14.5v4M15 14.5v4M3.5 18.5h14.5a3 3 0 0 0 3-3" stroke="#b45309"/></svg>
                   <select id="spaceParking" required>
                     <option value="none">주차 불가능</option>
                     <option value="yes">주차 가능</option>
@@ -302,7 +312,7 @@
 
     <!-- Footer -->
     <footer class="app-footer">
-      <p>© 2026 우리들의 예배 공간 • 공동체 지향 예배 공간 나누기</p>
+      <p>© 2026 BLC 송년예배 • 공동체 지향 예배 공간 나누기</p>
     </footer>
   </div>
 
@@ -346,7 +356,7 @@
             </div>
           </div>
           <div class="info-item">
-            <i data-lucide="car"></i>
+            <svg class="christmas-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h2l1.8 4.2h6.7l1.5-1.7h3.5l-.6 2.7a2.5 2.5 0 0 1-2.4 2.3H7.5Z" fill="#c92a2a" stroke="#991b1b"/><path d="M8.5 14.5v4M15 14.5v4M3.5 18.5h14.5a3 3 0 0 0 3-3" stroke="#b45309"/></svg>
             <div>
               <h3>주차</h3>
               <p id="modalParking">주차 불가능</p>
@@ -408,7 +418,7 @@
                 <div class="checkbox-group">
                   <input type="checkbox" id="joinParking">
                   <label for="joinParking" style="cursor: pointer; display: flex; align-items: center; gap: 0.35rem; font-weight: 500; font-size: 0.85rem; color: var(--text-main);">
-                    <i data-lucide="car" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+                    <svg class="christmas-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;"><path d="M4 7h2l1.8 4.2h6.7l1.5-1.7h3.5l-.6 2.7a2.5 2.5 0 0 1-2.4 2.3H7.5Z" fill="#c92a2a" stroke="#991b1b"/><path d="M8.5 14.5v4M15 14.5v4M3.5 18.5h14.5a3 3 0 0 0 3-3" stroke="#b45309"/></svg>
                     <span>차량 주차가 필요합니다</span>
                   </label>
                 </div>
@@ -465,6 +475,6 @@
   <!-- Alert Toasts Container -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <script src="app.js?v=1.1"></script>
+  <script src="app.js?v=1.6"></script>
 </body>
 </html>

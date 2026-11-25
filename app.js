@@ -210,6 +210,16 @@ function renderSummary() {
   document.getElementById('statTotalRegistered').textContent = `${totalRegistered}명`;
 }
 
+// Custom Lucide-style SVGs for Christmas theme (Santa-hat Host & Sleigh Parking)
+function getSantaHostIconSvg(extraAttrs = '') {
+  return `<svg class="christmas-icon santa-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" ${extraAttrs}><path d="M8.5 6.8 12 2.6a1.5 1.5 0 0 1 2.2-.1L17 5l-1.5 1.8Z" fill="#c92a2a" stroke="#991b1b"/><circle cx="18" cy="5.2" r="1.4" fill="#ffffff" stroke="#991b1b"/><rect x="7.5" y="6.8" width="9" height="2.4" rx="1.2" fill="#ffffff" stroke="#991b1b"/><path d="M8.8 9.2a3.4 3.4 0 1 0 6.4 0"/><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/></svg>`;
+}
+
+function getSleighIconSvg(extraAttrs = '', title = '') {
+  const titleTag = title ? `<title>${title}</title>` : '';
+  return `<svg class="christmas-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" ${extraAttrs}>${titleTag}<path d="M4 7h2l1.8 4.2h6.7l1.5-1.7h3.5l-.6 2.7a2.5 2.5 0 0 1-2.4 2.3H7.5Z" fill="#c92a2a" stroke="#991b1b"/><path d="M8.5 14.5v4M15 14.5v4M3.5 18.5h14.5a3 3 0 0 0 3-3" stroke="#b45309"/></svg>`;
+}
+
 // Filter and Render Space Cards
 function renderSpaces() {
   const grid = document.getElementById('spaceGrid');
@@ -279,7 +289,7 @@ function renderSpaces() {
         </div>
       </div>
       <div class="host">
-        <i data-lucide="user" style="width: 14px; height: 14px;"></i>
+        ${getSantaHostIconSvg('style="width: 24px; height: 24px;"')}
         <span>호스트: <strong>${escapeHtml(space.host_name)}</strong> (${space.host_party_size || 1}명)</span>
       </div>
       <div class="space-card-body">
@@ -299,7 +309,7 @@ function renderSpaces() {
           <span class="info-text">${formatTimeDisplay(space.open_time || '14:00')} ~ ${formatTimeDisplay(space.close_time || '16:00')}</span>
         </div>
         <div class="space-info-row">
-          <i data-lucide="car"></i>
+          ${getSleighIconSvg()}
           <span class="info-label">주차</span>
           <span class="info-text">${escapeHtml(parkingText)}</span>
         </div>
@@ -397,7 +407,7 @@ function openSpaceDetailsModal(space) {
   hostLi.style.borderColor = 'rgba(61, 96, 81, 0.15)';
   hostLi.style.fontWeight = '700';
   hostLi.innerHTML = `
-    <i data-lucide="home" style="color: var(--primary); width: 12px; height: 12px; vertical-align: middle;"></i>
+    ${getSantaHostIconSvg('style="color: var(--primary); width: 20px; height: 20px; vertical-align: middle;"')}
     <span style="color: var(--primary); font-weight: 700;">${escapeHtml(space.host_name)} (${space.host_party_size || 1}명)</span>
   `;
   listContainer.appendChild(hostLi);
@@ -407,7 +417,7 @@ function openSpaceDetailsModal(space) {
       const li = document.createElement('li');
       li.className = 'participant-chip';
       const partyText = reg.party_size && parseInt(reg.party_size) > 1 ? ` (${reg.party_size}명)` : '';
-      const parkingIcon = reg.parking_required ? ` <i data-lucide="car" style="width: 12px; height: 12px; color: var(--accent); margin-left: 0.25rem; vertical-align: middle;" title="주차 필요"></i>` : '';
+      const parkingIcon = reg.parking_required ? ` ${getSleighIconSvg('style="width: 16px; height: 16px; margin-left: 0.25rem; vertical-align: middle;"', '주차 필요')}` : '';
       li.innerHTML = `
         <i data-lucide="user"></i>
         <span>${escapeHtml(reg.user_name)}${partyText}</span>
@@ -807,8 +817,128 @@ function showToast(message, type = 'info') {
   }, 3500);
 }
 
+// Subtle Winter Snowfall Effect
+function initSnowEffect() {
+  const canvas = document.getElementById('snowCanvas');
+  if (!canvas) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let flakes = [];
+  let animId = null;
+
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const targetCount = width < 640 ? 24 : 40;
+    if (flakes.length === 0) {
+      flakes = Array.from({ length: targetCount }, () => createFlake(true));
+    } else if (flakes.length < targetCount) {
+      while (flakes.length < targetCount) flakes.push(createFlake(true));
+    } else if (flakes.length > targetCount) {
+      flakes.length = targetCount;
+    }
+  }
+
+  function createFlake(randomY = false) {
+    const isCrystal = Math.random() < 0.18;
+    return {
+      x: Math.random() * width,
+      y: randomY ? Math.random() * height : -10,
+      radius: isCrystal ? 2.4 + Math.random() * 1.4 : 1.4 + Math.random() * 2.1,
+      speedY: 0.35 + Math.random() * 0.65,
+      swayAmp: 0.25 + Math.random() * 0.45,
+      swayPhase: Math.random() * Math.PI * 2,
+      swaySpeed: 0.008 + Math.random() * 0.012,
+      alpha: 0.45 + Math.random() * 0.4,
+      isCrystal,
+      rotation: Math.random() * Math.PI,
+      rotSpeed: (Math.random() - 0.5) * 0.012
+    };
+  }
+
+  function drawCrystal(x, y, r, rot, alpha) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    ctx.strokeStyle = `rgba(165, 192, 218, ${alpha})`;
+    ctx.lineWidth = 1;
+    ctx.lineCap = 'round';
+    for (let i = 0; i < 3; i++) {
+      ctx.rotate(Math.PI / 3);
+      ctx.beginPath();
+      ctx.moveTo(-r, 0);
+      ctx.lineTo(r, 0);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function step() {
+    ctx.clearRect(0, 0, width, height);
+
+    for (let i = 0; i < flakes.length; i++) {
+      const f = flakes[i];
+      f.swayPhase += f.swaySpeed;
+      f.y += f.speedY;
+      f.x += Math.sin(f.swayPhase) * f.swayAmp;
+      f.rotation += f.rotSpeed;
+
+      if (f.y > height + 10) {
+        flakes[i] = createFlake(false);
+        continue;
+      }
+      if (f.x > width + 10) f.x = -10;
+      else if (f.x < -10) f.x = width + 10;
+
+      if (f.isCrystal) {
+        drawCrystal(f.x, f.y, f.radius * 1.35, f.rotation, f.alpha);
+      } else {
+        // Cool ice-tinted soft flake so it stays visible on cream/white backgrounds
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(186, 208, 228, ${f.alpha * 0.85})`;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.radius * 0.55, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${f.alpha})`;
+        ctx.fill();
+      }
+    }
+
+    animId = requestAnimationFrame(step);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && animId !== null) {
+      cancelAnimationFrame(animId);
+      animId = null;
+    } else if (!document.hidden && animId === null) {
+      animId = requestAnimationFrame(step);
+    }
+  });
+
+  window.addEventListener('resize', resize);
+  resize();
+  animId = requestAnimationFrame(step);
+}
+
 // Event Listeners Initialization
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize snow overlay
+  initSnowEffect();
+
   // Initialize Supabase and load data
   initSupabase();
   loadData();
